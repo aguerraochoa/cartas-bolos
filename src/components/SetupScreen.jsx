@@ -4,6 +4,7 @@ import { Users, Play } from 'lucide-react';
 
 const SetupScreen = () => {
     const { startGame } = useGame();
+    const [count, setCount] = useState(4);
     const [names, setNames] = useState(Array(4).fill('').map((_, i) => `Player ${i + 1}`));
 
     // Update names array when count changes

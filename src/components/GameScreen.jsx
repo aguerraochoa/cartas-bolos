@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import { useGame } from '../context/GameContext';
 import { formatCard, evaluateBestHand } from '../utils/poker';
 import { Trash2, ArrowRight, Trophy } from 'lucide-react';
@@ -20,12 +20,28 @@ const GameScreen = () => {
     const { players, deck, drawCard, removeLastCard, finishGame } = useGame();
     const scrollRef = useRef(null);
 
-    // Auto scroll logic if needed, or just let user scroll
+    // Calculate rankings based on current hand strength
+    const rankedPlayers = players.map(player => {
+        const bestHand = evaluateBestHand(player.cards);
+        return { ...player, bestHand };
+    }).sort((a, b) => {
+        if (!a.bestHand) return 1;
+        if (!b.bestHand) return -1;
+        return b.bestHand.loseTo(a.bestHand) ? -1 : 1;
+    });
+
+    // Create a map of player id to their ranking position
+    const rankMap = {};
+    rankedPlayers.forEach((p, idx) => {
+        if (p.bestHand) {
+            rankMap[p.id] = idx;
+        }
+    });
 
     return (
         <div className="flex flex-col h-screen bg-slate-950 text-white">
             {/* Header / Stats */}
-            <div className="bg-slate-900 p-4 shadow-lg flex justify-between items-center z-10 sticky top-0">
+            <div className="bg-slate-900 p-4 shadow-lg flex justify-between items-center z-10 sticky top-0 border-b border-slate-800">
                 <div>
                     <h2 className="font-bold text-xl text-yellow-500">Bowling Poker</h2>
                     <div className="text-sm text-slate-400">{deck.length} cards left</div>
@@ -39,7 +55,7 @@ const GameScreen = () => {
                 </button>
             </div>
 
-            <div className="flex-1 p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 auto-rows-min overflow-y-auto pb-20">
+            <div className="flex-1 p-4 grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-min overflow-y-auto pb-20">
                 {/* Helper text if no players or waiting */}
                 {players.length === 0 && (
                     <div className="col-span-full text-center text-gray-500 mt-10">No players</div>
@@ -47,21 +63,44 @@ const GameScreen = () => {
 
                 {players.map(player => {
                     const bestHand = evaluateBestHand(player.cards);
+                    const ranking = rankMap[player.id];
+
+                    // Neon Glow styling based on ranking
+                    let glowClass = '';
+                    let borderClass = 'border-slate-600';
+                    let rankBadge = null;
+
+                    if (ranking === 0 && bestHand) {
+                        glowClass = 'shadow-[0_0_30px_rgba(255,215,0,0.4)]';
+                        borderClass = 'border-yellow-400';
+                        rankBadge = '🥇';
+                    } else if (ranking === 1 && bestHand) {
+                        glowClass = 'shadow-[0_0_25px_rgba(192,192,192,0.3)]';
+                        borderClass = 'border-gray-300';
+                        rankBadge = '🥈';
+                    } else if (ranking === 2 && bestHand) {
+                        glowClass = 'shadow-[0_0_20px_rgba(205,127,50,0.3)]';
+                        borderClass = 'border-amber-600';
+                        rankBadge = '🥉';
+                    }
 
                     return (
-                        <div key={player.id} className="bg-slate-800/80 backdrop-blur rounded-2xl p-4 flex flex-col relative border border-slate-700 shadow-xl transition-all hover:border-slate-600">
+                        <div key={player.id} className={`bg-slate-900 rounded-2xl p-4 border-2 ${borderClass} ${glowClass} transition-all flex flex-col`}>
                             <div className="flex justify-between items-start mb-3">
                                 <div>
-                                    <span className="font-bold text-lg text-slate-200 block">{player.name}</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-bold text-lg text-white">{player.name}</span>
+                                        {rankBadge && <span className="text-xl">{rankBadge}</span>}
+                                    </div>
                                     {bestHand && (
-                                        <div className="text-xs text-yellow-400 font-medium flex items-center gap-1 mt-1">
+                                        <div className="text-xs text-cyan-400 font-medium mt-1 flex items-center gap-1">
                                             <Trophy size={12} />
-                                            {bestHand.name}
+                                            {bestHand.descr}
                                         </div>
                                     )}
                                 </div>
                                 <div className="flex items-center space-x-2">
-                                    <span className="text-xs font-mono text-slate-400 bg-slate-900 px-2 py-1 rounded-md">
+                                    <span className="text-xs text-slate-400 bg-slate-800 px-2 py-1 rounded">
                                         {player.cards.length} cards
                                     </span>
                                     {player.cards.length > 0 && (
@@ -81,7 +120,7 @@ const GameScreen = () => {
 
                             {/* Card Area */}
                             <div
-                                className="flex-1 min-h-[140px] bg-slate-900/50 rounded-xl border-2 border-dashed border-slate-700 hover:border-indigo-500/50 transition-colors flex items-center p-3 overflow-x-auto cursor-pointer"
+                                className="flex-1 min-h-[120px] bg-slate-800/60 rounded-xl border-2 border-dashed border-slate-700 hover:border-cyan-500/50 transition-colors flex items-center p-3 overflow-x-auto cursor-pointer"
                                 onClick={() => drawCard(player.id)}
                             >
                                 {player.cards.length === 0 ? (
