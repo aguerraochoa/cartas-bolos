@@ -67,7 +67,7 @@ const SetupScreen = () => {
                             <input
                                 value={name}
                                 onChange={(e) => handleNameChange(index, e.target.value)}
-                                className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                                className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-base focus:outline-none focus:border-indigo-500 transition-colors"
                                 placeholder={`Player ${index + 1}`}
                             />
                         </div>

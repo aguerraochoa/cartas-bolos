@@ -6,4 +6,11 @@
   body {
     @apply bg-slate-900 text-white antialiased;
   }
+
+  /* Prevent iOS zoom on focus */
+  input,
+  textarea,
+  select {
+    @apply text-base;
+  }
 }
