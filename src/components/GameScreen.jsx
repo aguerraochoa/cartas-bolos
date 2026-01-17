@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
-import { formatCard } from '../utils/poker';
-import { Trash2, ArrowRight } from 'lucide-react';
+import { formatCard, evaluateBestHand } from '../utils/poker';
+import { Trash2, ArrowRight, Trophy } from 'lucide-react';
 
 const Card = ({ code }) => {
     const { rank, suit, color } = formatCard(code);
@@ -45,46 +45,58 @@ const GameScreen = () => {
                     <div className="col-span-full text-center text-gray-500 mt-10">No players</div>
                 )}
 
-                {players.map(player => (
-                    <div key={player.id} className="bg-slate-800/80 backdrop-blur rounded-2xl p-4 flex flex-col relative border border-slate-700 shadow-xl">
-                        <div className="flex justify-between items-center mb-3">
-                            <span className="font-bold text-lg text-slate-200">Player {player.id}</span>
-                            <div className="flex items-center space-x-2">
-                                <span className="text-xs font-mono text-slate-400 bg-slate-900 px-2 py-1 rounded-md">
-                                    {player.cards.length} cards
-                                </span>
-                                {player.cards.length > 0 && (
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            removeLastCard(player.id);
-                                        }}
-                                        className="p-2 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-full transition-colors"
-                                        title="Remove last card"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
+                {players.map(player => {
+                    const bestHand = evaluateBestHand(player.cards);
+
+                    return (
+                        <div key={player.id} className="bg-slate-800/80 backdrop-blur rounded-2xl p-4 flex flex-col relative border border-slate-700 shadow-xl transition-all hover:border-slate-600">
+                            <div className="flex justify-between items-start mb-3">
+                                <div>
+                                    <span className="font-bold text-lg text-slate-200 block">{player.name}</span>
+                                    {bestHand && (
+                                        <div className="text-xs text-yellow-400 font-medium flex items-center gap-1 mt-1">
+                                            <Trophy size={12} />
+                                            {bestHand.name}
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <span className="text-xs font-mono text-slate-400 bg-slate-900 px-2 py-1 rounded-md">
+                                        {player.cards.length} cards
+                                    </span>
+                                    {player.cards.length > 0 && (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                removeLastCard(player.id);
+                                            }}
+                                            className="p-2 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-full transition-colors"
+                                            title="Remove last card"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Card Area */}
+                            <div
+                                className="flex-1 min-h-[140px] bg-slate-900/50 rounded-xl border-2 border-dashed border-slate-700 hover:border-indigo-500/50 transition-colors flex items-center p-3 overflow-x-auto cursor-pointer"
+                                onClick={() => drawCard(player.id)}
+                            >
+                                {player.cards.length === 0 ? (
+                                    <div className="w-full text-center text-slate-500 font-medium">Tap to Deal Card</div>
+                                ) : (
+                                    <div className="flex flex-wrap gap-2 justify-start">
+                                        {player.cards.map((card, idx) => (
+                                            <Card key={`${card}-${idx}`} code={card} />
+                                        ))}
+                                    </div>
                                 )}
                             </div>
                         </div>
-
-                        {/* Card Area */}
-                        <div
-                            className="flex-1 min-h-[140px] bg-slate-900/50 rounded-xl border-2 border-dashed border-slate-700 hover:border-indigo-500/50 transition-colors flex items-center p-3 overflow-x-auto cursor-pointer"
-                            onClick={() => drawCard(player.id)}
-                        >
-                            {player.cards.length === 0 ? (
-                                <div className="w-full text-center text-slate-500 font-medium">Tap to Deal Card</div>
-                            ) : (
-                                <div className="flex flex-wrap gap-2 justify-start">
-                                    {player.cards.map((card, idx) => (
-                                        <Card key={`${card}-${idx}`} code={card} />
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                ))}
+                    );
+                })}
 
                 {/* Spacer for bottom area if needed */}
                 <div className="h-4 w-full md:col-span-2"></div>

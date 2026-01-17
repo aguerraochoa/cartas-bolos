@@ -49,7 +49,7 @@ const ResultsScreen = () => {
                                         #{index + 1}
                                     </div>
                                     <div>
-                                        <div className="font-bold text-xl">Player {player.id}</div>
+                                        <div className="font-bold text-xl">{player.name}</div>
                                         <div className="text-sm text-indigo-300 font-medium">{player.handDescription}</div>
                                     </div>
                                 </div>

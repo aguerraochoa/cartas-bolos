@@ -31,13 +31,31 @@ export const GameProvider = ({ children }) => {
         localStorage.setItem('bowling_poker_state', JSON.stringify(stateToSave));
     }, [gameState, players, deck, results]);
 
-    const startGame = (playerCount) => {
+    const startGame = (playerConfig) => {
         const newDeck = shuffleDeck(createDeck());
         const newPlayers = [];
 
+        let playerCount = 4;
+        let playerNames = [];
+
+        // Handle both number (legacy) and array of names
+        if (typeof playerConfig === 'number') {
+            playerCount = playerConfig;
+            for (let i = 0; i < playerCount; i++) {
+                playerNames.push(`Player ${i + 1}`);
+            }
+        } else if (Array.isArray(playerConfig)) {
+            playerCount = playerConfig.length;
+            playerNames = playerConfig;
+        }
+
         // Initialize players
         for (let i = 0; i < playerCount; i++) {
-            newPlayers.push({ id: i + 1, cards: [] });
+            newPlayers.push({
+                id: i + 1,
+                name: playerNames[i] || `Player ${i + 1}`,
+                cards: []
+            });
         }
 
         // Deal 1 card to each player to start
